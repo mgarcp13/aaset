@@ -1,11 +1,12 @@
+#! /usr/bin/python3
+
 import re
 import sys
-import subprocess
 
 ident="  "
 main=""
 package=""
-output_filename="p_test_klee"
+output_filename="p_klee_main"
 ada_body_extension=".adb"
 ada_spec_extension=".ads"
 byte_code_extension=".bc"
@@ -140,12 +141,12 @@ if all_procedures_declaration:
         del function_params[:]
     
     main+=print_imports()
-    main+="procedure P_TEST_KLEE is\n\n"
+    main+="procedure "+output_filename.upper()+" is\n\n"
     main+=print_params()
     main+="begin\n\n"
     main+=make_symbolic()
     main+=call_procedures()
-    main+="end P_TEST_KLEE;"
+    main+="end "+output_filename.upper()+";"
 #print(main)
 output_file.write(main)
 output_file.close()
@@ -153,8 +154,3 @@ print ("File "+output_filename+ada_body_extension+" written")
 
 #########################################
 
-# Once main file is created generate bytecode for main file and import package and run klee for symbolic execution
-subprocess.run(["llvm-gcc","-c","-emit-llvm","-gnatp","-I","include/",output_filename+ada_body_extension])
-subprocess.run(["llvm-gcc","-c","-emit-llvm","-gnatp","-I","include/",package+ada_body_extension])
-subprocess.run(["klee","--entry-point=_ada_p_test_klee","--link-llvm-lib="+package+byte_code_extension,"--external-calls=none",output_filename+byte_code_extension])
-subprocess.run(["./read_errors.sh"])
