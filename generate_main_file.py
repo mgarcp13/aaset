@@ -3,6 +3,12 @@
 import re
 import sys
 
+# Input and Output file location directories
+exec_dir="exec"
+src_dir=exec_dir+"/src"
+src_main_dir=src_dir+"/main/"
+src_include_dir=src_dir+"/include/"
+
 ident="  "
 main=""
 package=""
@@ -122,8 +128,8 @@ def call_procedures():
 # When symbolic execution ends all errors found in test cases are readed and printed in a txt file for each case
 
 package=sys.argv[1]
-input_file=open(package+ada_spec_extension,'r')
-output_file=open(output_filename+ada_body_extension,'w')
+input_file=open(src_include_dir+package+ada_spec_extension,'r')
+output_file=open(src_main_dir+output_filename+ada_body_extension,'w')
 input_string=input_file.read()
 
 all_procedures_declaration=re.findall(r'(?:(?:procedure)[ ]+)([0-9A-Z_]*)(?:\s)*(?:[(])(.*?)(?:[)])(?:.*?[;])',input_string,re.DOTALL)
