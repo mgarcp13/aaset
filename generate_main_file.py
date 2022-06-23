@@ -86,7 +86,11 @@ def print_imports():
         import_declarations+="with "+imp+"; use "+imp+";\n\n"
     import_declarations+="with KLEE_KLEE_H; use KLEE_KLEE_H;\n\n"
     import_declarations+="with STDDEF_H; use STDDEF_H;\n\n"
-    import_declarations+="with "+package.upper()+"; use "+package.upper()+";\n\n"
+    package_name=package.upper().replace('-','.')
+    subpackages_list=package_name.split('.')
+    for i in range(len(subpackages_list)):
+        import_declarations+="with "+".".join(subpackages_list[0:i+1])+"; use "+".".join(subpackages_list[0:i+1])+";\n"
+    import_declarations+="\n"
     return import_declarations
 
 # Return a string with all params used in procedures and create and object with the param name
