@@ -8,11 +8,12 @@ exec_dir="exec"
 src_dir=exec_dir+"/src"
 src_main_dir=src_dir+"/main/"
 src_include_dir=src_dir+"/include/"
+output_dir="exec/tools/converter/src/"
 
 ident="  "
 main=""
 package=""
-output_filename="p_klee_main"
+output_filename="p_converter"
 ada_body_extension=".adb"
 ada_spec_extension=".ads"
 
@@ -27,6 +28,8 @@ function_params=list()
 all_params=set()
 # This set include packages to be imported
 imports=set()
+# This dictonary include the type name among their convert function name
+convert_functions={}
 
 
 # Get the package where an object or procedure is located to import it
@@ -70,21 +73,24 @@ def add_param (param_name, param_type):
     function_params.append(param_declaration)
     get_imports(param_type)
 
+
 #########################################
 #### PRINT FUNCTIONS
 #########################################
 
+# Return a string with all imports needed
 def print_imports():
     import_declarations=""
     for imp in imports:
-        import_declarations+="with "+imp+"; use "+imp+";\n\n"
-    import_declarations+="with KLEE_KLEE_H; use KLEE_KLEE_H;\n\n"
-    import_declarations+="with STDDEF_H; use STDDEF_H;\n\n"
+        import_declarations+="with "+imp+"; use "+imp+";\n"
+    import_declarations+="with ADA.COMMAND_LINE;\n"
+    import_declarations+="with ADA.TEXT_IO;\n"
+    import_declarations+="with Q_CONVERTER; use Q_CONVERTER;\n"
     package_name=package.upper().replace('-','.')
     subpackages_list=package_name.split('.')
     for i in range(len(subpackages_list)):
         import_declarations+="with "+".".join(subpackages_list[0:i+1])+"; use "+".".join(subpackages_list[0:i+1])+";\n"
-    import_declarations+="\n"
+    import_declarations+="\n\n"
     return import_declarations
 
 # Return a string with all params used in procedures and create and object with the param name
@@ -92,17 +98,8 @@ def print_params():
     params=""
     for param in all_params:
         name=param.split(":")[0].strip()
-        params+=ident+param+";\n"
-        params+=ident+name+"_NAME : constant STRING := \""+name+"\";\n\n"
+        params+=ident+param+";\n\n"
     return params
-
-# Return the statements to make all the params symbolic
-def make_symbolic():
-    declaration=""
-    for param in all_params:
-        name=param.split(":")[0].strip()
-        declaration+=ident+"KLEE_KLEE_H.KLEE_MAKE_SYMBOLIC ("+name+"'ADDRESS, STDDEF_H.SIZE_T ("+name+"'size / 8), "+name+"_NAME'ADDRESS);\n\n"
-    return declaration
 
 # Return the call to all procedures declared in file with their params made symbolic
 def call_procedures():
@@ -116,18 +113,38 @@ def call_procedures():
         calls+=");\n\n"
     return calls
 
+# Return a string declaration all convert function and create a dictonary with the type name and
+# the convert function name for that type
+def get_convert_functions():
+    convert_functions_declaration=""
+    for param in all_params:
+        type_name=param.split(":")[1].strip()
+        convert_functions[type_name]="F_"+type_name+"_CONVERTER"
+        convert_functions_declaration+=ident+"function "+convert_functions[type_name]+" is new Q_CONVERTER.F_GET_VALUE ("+type_name+");\n\n"
+    return convert_functions_declaration
+
+def get_value_functions():
+    get_value_functions_body=""
+    for param_index,param in enumerate(all_params):
+        get_value_functions_body+=(ident)+"Q_INTEGER_IO.GET\n"
+        get_value_functions_body+=(ident*2)+"(FROM => ADA.COMMAND_LINE.ARGUMENT ("+str(param_index+1)+"),\n"
+        get_value_functions_body+=(ident*2)+" ITEM => V_HEX,\n"
+        get_value_functions_body+=(ident*2)+" LAST => V_LAST);\n\n"
+        param_split=param.split(":")
+        get_value_functions_body+=(ident)+param_split[0].strip()+" := "+convert_functions[param_split[1].strip()]+" (V_HEX);\n\n"
+    return get_value_functions_body
+
+
+
 #########################################
 
 # This python script takes a package name (without extension) and creates a new main procedure which takes all
-# the procedures declared in package spec with all the params of all procedures, making all of then symbolic and
-# calling all the procedures with all of those variables.
-# Once the main file is created bytecode of it and of the package is created and executed by klee, performing the
-# symbolic execution.
-# When symbolic execution ends all errors found in test cases are readed and printed in a txt file for each case
+# the procedures declared in package spec with all the params of all procedures. Take values from klee executions,
+# convert then into the variables preoviously declared and call all the procedures using those values
 
 package=sys.argv[1]
 input_file=open(src_include_dir+package+ada_spec_extension,'r')
-output_file=open(src_main_dir+output_filename+ada_body_extension,'w')
+output_file=open(output_dir+output_filename+ada_body_extension,'w')
 input_string=input_file.read()
 
 all_procedures_declaration=re.findall(r'(?:(?:procedure)[ ]+)([0-9A-Z_]*)(?:\s)*(?:[(])(.*?)(?:[)])(?:.*?[;])',input_string,re.DOTALL)
@@ -147,8 +164,13 @@ if all_procedures_declaration:
     main+=print_imports()
     main+="procedure "+output_filename.upper()+" is\n\n"
     main+=print_params()
+    main+=get_convert_functions()
+	#main+=ident+"package Q_INTEGER_IO is new ADA.TEXT_IO.INTEGER_IO (LONG_LONG_INTEGER);\n\n"
+    main+=ident+"package Q_INTEGER_IO is new ADA.TEXT_IO.INTEGER_IO (LONG_LONG_INTEGER);\n\n"
+    main+=ident+"V_HEX : LONG_LONG_INTEGER;\n\n"
+    main+=ident+"V_LAST : POSITIVE;\n\n"
     main+="begin\n\n"
-    main+=make_symbolic()
+    main+=get_value_functions()
     main+=call_procedures()
     main+="end "+output_filename.upper()+";"
 output_file.write(main)
