@@ -4,11 +4,11 @@ import re
 import sys
 
 # Input and Output file location directories
-exec_dir="exec"
+exec_dir=sys.argv[2]
 src_dir=exec_dir+"/src"
 src_main_dir=src_dir+"/main/"
 src_include_dir=src_dir+"/include/"
-output_dir="exec/tools/converter/src/"
+output_dir=exec_dir+"/tools/converter/src/"
 
 ident="  "
 main=""
