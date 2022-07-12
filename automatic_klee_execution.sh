@@ -5,7 +5,7 @@
 INCLUDE_DIR=include/
 
 # root directory of each execution. This directory is remove between executions
-EXEC_DIR=exec.$$
+EXEC_DIR=$3
 
 # src directories include source files
 SRC_DIR=$EXEC_DIR/src
@@ -56,7 +56,7 @@ source_file=$2
 
 # Display usage message and exit returning code 1
 usage () {
-  echo "usage $0 <module> <source>"
+  echo "usage $0 <module> <source> <exec_dir>"
   exit 1
 }
 
@@ -77,6 +77,7 @@ file_not_generated () {
 # exit by return code 4
 error_compilation_error () {
   echo "Error compilating $1"
+  python3 write_compilation_error.py $EXEC_DIR
   exit 4
 }
 
@@ -215,7 +216,7 @@ init
 
 # Module to be symbolicly executed must be passed as an input param
 # If no input params print usage message and exit returning code 1
-if [ $# -lt 2 ]; then
+if [ $# -lt 3 ]; then
   usage
 elif [[ -f "$SRC_INCLUDE_DIR/$module.adb" && -f "$SRC_INCLUDE_DIR/$module.ads" ]]; then
   # If module provided and both body and spec exists starts the execution

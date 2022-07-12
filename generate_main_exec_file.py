@@ -52,7 +52,7 @@ def remove_param_mode (param_type):
 
 # Check if already exists a param with the same name and different type. If so renames new
 # param adding the suffix _1
-# Same params (name are type are the same) are only write once
+# Same params (name and type are the same) are only write once
 def check_param (param_name, param_type):
     for param in all_params:
         param_declaration=param.split(":")
@@ -96,7 +96,12 @@ def print_imports():
 # Return a string with all params used in procedures and create and object with the param name
 def print_params():
     params=""
-    for param in all_params:
+    # Set are unorderes, which means that do not have a defined order
+    # Convert set into list and sort it to ensure main_klee and main_converter declare
+    # variables in the same order
+    all_params_list=list(all_params)
+    all_params_list.sort()
+    for param in all_params_list:
         name=param.split(":")[0].strip()
         params+=ident+param+";\n\n"
     return params
@@ -165,7 +170,6 @@ if all_procedures_declaration:
     main+="procedure "+output_filename.upper()+" is\n\n"
     main+=print_params()
     main+=get_convert_functions()
-	#main+=ident+"package Q_INTEGER_IO is new ADA.TEXT_IO.INTEGER_IO (LONG_LONG_INTEGER);\n\n"
     main+=ident+"package Q_INTEGER_IO is new ADA.TEXT_IO.INTEGER_IO (LONG_LONG_INTEGER);\n\n"
     main+=ident+"V_HEX : LONG_LONG_INTEGER;\n\n"
     main+=ident+"V_LAST : POSITIVE;\n\n"

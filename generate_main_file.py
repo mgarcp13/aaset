@@ -49,7 +49,7 @@ def remove_param_mode (param_type):
 
 # Check if already exists a param with the same name and different type. If so renames new
 # param adding the suffix _1
-# Same params (name are type are the same) are only write once
+# Same params (name and type are the same) are only write once
 def check_param (param_name, param_type):
     for param in all_params:
         param_declaration=param.split(":")
@@ -77,9 +77,9 @@ def add_param (param_name, param_type):
 def print_imports():
     import_declarations=""
     for imp in imports:
-        import_declarations+="with "+imp+"; use "+imp+";\n\n"
-    import_declarations+="with KLEE_KLEE_H; use KLEE_KLEE_H;\n\n"
-    import_declarations+="with STDDEF_H; use STDDEF_H;\n\n"
+        import_declarations+="with "+imp+"; use "+imp+";\n"
+    import_declarations+="with KLEE_KLEE_H; use KLEE_KLEE_H;\n"
+    import_declarations+="with STDDEF_H; use STDDEF_H;\n"
     package_name=package.upper().replace('-','.')
     subpackages_list=package_name.split('.')
     for i in range(len(subpackages_list)):
@@ -90,7 +90,12 @@ def print_imports():
 # Return a string with all params used in procedures and create and object with the param name
 def print_params():
     params=""
-    for param in all_params:
+    # Set are unorderes, which means that do not have a defined order
+    # Convert set into list and sort it to ensure main_klee and main_converter declare
+    # variables in the same order
+    all_params_list=list(all_params)
+    all_params_list.sort()
+    for param in all_params_list:
         name=param.split(":")[0].strip()
         params+=ident+param+";\n"
         params+=ident+name+"_NAME : constant STRING := \""+name+"\";\n\n"

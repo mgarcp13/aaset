@@ -6,15 +6,13 @@ import json
 from pathlib import Path
 
 exec_dir=sys.argv[1]
-output_dir=exec_dir+"/output/klee/"
+klee_output_dir=exec_dir+"/output/klee/"
+report_output_dir=exec_dir+"/output/report/"
 
 # List including the whole report
 report_list=list()
 
-#report_filename=sys.argv[1]
-#report=open(output_dir+report_filename,'r').read()
-
-path=Path(output_dir)
+path=Path(klee_output_dir)
 for case_file in path.glob("test[0-9]*.txt"):
     report=open(case_file,'r').read()
     # Regular expression to get the number of objects (num objects: X)
@@ -34,11 +32,14 @@ for case_file in path.glob("test[0-9]*.txt"):
                     info=object_info.split(":")
                     object_info_dict[info[0]]=info[1].strip()
                 objects_list.append(object_info_dict)
-            case_list.append({"objects":objects_list})
+        case_list.append({"objects":objects_list})
         error_match=re.search(r'(?:Error[:])(?:\s)*(.*)',report)
         if error_match:
             error_info={}
             error_info["error"]=error_match.group(1)
             case_list.append(error_info)
         report_list.append(case_list)
-open(output_dir+"report.json",'w').write(json.JSONEncoder().encode({"cases":report_list}))
+if report_list:
+    open(report_output_dir+"report.json",'w').write(json.JSONEncoder().encode({"cases":report_list}))
+else:
+    open(report_output_dir+"report.json",'w').write(json.JSONEncoder().encode({"msg":"no errors found"}))
