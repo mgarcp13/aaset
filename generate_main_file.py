@@ -104,7 +104,12 @@ def print_params():
 # Return the statements to make all the params symbolic
 def make_symbolic():
     declaration=""
-    for param in all_params:
+    # Set are unorderes, which means that do not have a defined order
+    # Convert set into list and sort it to ensure main_klee and main_converter declare
+    # variables in the same order
+    all_params_list=list(all_params)
+    all_params_list.sort()
+    for param in all_params_list:
         name=param.split(":")[0].strip()
         declaration+=ident+"KLEE_KLEE_H.KLEE_MAKE_SYMBOLIC ("+name+"'ADDRESS, STDDEF_H.SIZE_T ("+name+"'size / 8), "+name+"_NAME'ADDRESS);\n\n"
     return declaration

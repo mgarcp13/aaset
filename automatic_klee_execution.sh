@@ -63,7 +63,8 @@ usage () {
 # Display error message if any of spec or body for input module is not found
 # exit by return code 2
 file_not_exist () {
-  echo "file $1.adb or $1.ads not exists"
+  echo "file `basename $1`.adb or `basename $1`.ads not exists" > $OUTPUT_REPORT_DIR/compilation_errors.err
+  python3 write_compilation_error.py $EXEC_DIR
   exit 2
 }
 
@@ -122,19 +123,24 @@ run_klee_execution () {
 read_errors () {
   error_description=""
   if [[ $(ls $OUTPUT_KLEE_DIR/*err 2> /dev/null) ]]; then
+    if [[ -f $OUTPUT_KLEE_DIR/test000001.ktest ]]; then
+      num_objects=$(ktest-tool $OUTPUT_KLEE_DIR/test000001.ktest | fgrep "num objects" | awk -F: '{print $2}' | awk '{print $1}')
+    fi
     for i in `ls $OUTPUT_KLEE_DIR/*err`; do
       # Each error information is written in a file like test000001.*.err so get the case (test000001) and use it
       # to read the test case (test000001.ktest)
-      case=$(ls $i | awk -F. '{print $1}')
+      case=$(basename `ls $i` | awk -F. '{print $1}')
       # Briew description about the error (ie Error: divide by zero)
       error_description=$(head -1 $i)
-      echo `basename $case` : $error_description > $case.txt
-      # Run ktest-tool for the test case to get information about the test case (variable names, values, etc)
-      ktest-tool $case.ktest >> $case.txt
+      # Write case info only if file does not exists
+      if [[ ! -s $OUTPUT_KLEE_DIR/$case.txt ]]; then
+	echo "num objects: $num_objects" > $OUTPUT_KLEE_DIR/$case.txt
+	# Run ktest-tool for the test case to get information about the test case (variable names, values, etc)
+        ktest-tool $case.ktest >> $OUTPUT_KLEE_DIR/$case.txt
+      fi
+      echo "Klee $error_description" >> $OUTPUT_KLEE_DIR/$case.txt
       #echo `basename $case_error` : $error_description
     done
-  else
-    echo "No errors found in symbolic execution"
   fi
 }
 
@@ -163,7 +169,6 @@ read_converter_errors () {
       rm $case.txt && rm $case.err
     fi
   done
-  python3 write_json_report.py $EXEC_DIR
 }
 
 # Once symbolic execution ends generate converter to run concretly the program with values in all test cases
@@ -179,7 +184,8 @@ start () {
   run_klee_execution
   write_converter
   read_converter_errors
-  #read_errors
+  read_errors
+  python3 write_json_report.py $EXEC_DIR
 }
 
 # Initialize directory exec structure
@@ -212,13 +218,15 @@ init () {
 
 #########################################
 
-init
-
 # Module to be symbolicly executed must be passed as an input param
 # If no input params print usage message and exit returning code 1
 if [ $# -lt 3 ]; then
   usage
-elif [[ -f "$SRC_INCLUDE_DIR/$module.adb" && -f "$SRC_INCLUDE_DIR/$module.ads" ]]; then
+fi
+
+init
+
+if [[ -f "$SRC_INCLUDE_DIR/$module.adb" && -f "$SRC_INCLUDE_DIR/$module.ads" ]]; then
   # If module provided and both body and spec exists starts the execution
   start
 else

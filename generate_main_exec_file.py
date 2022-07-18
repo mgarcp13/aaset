@@ -130,7 +130,12 @@ def get_convert_functions():
 
 def get_value_functions():
     get_value_functions_body=""
-    for param_index,param in enumerate(all_params):
+    # Set are unorderes, which means that do not have a defined order
+    # Convert set into list and sort it to ensure main_klee and main_converter declare
+    # variables in the same order
+    all_params_list=list(all_params)
+    all_params_list.sort()
+    for param_index,param in enumerate(all_params_list):
         get_value_functions_body+=(ident)+"Q_INTEGER_IO.GET\n"
         get_value_functions_body+=(ident*2)+"(FROM => ADA.COMMAND_LINE.ARGUMENT ("+str(param_index+1)+"),\n"
         get_value_functions_body+=(ident*2)+" ITEM => V_HEX,\n"

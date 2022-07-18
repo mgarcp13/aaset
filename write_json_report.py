@@ -32,11 +32,18 @@ for case_file in path.glob("test[0-9]*.txt"):
                     info=object_info.split(":")
                     object_info_dict[info[0]]=info[1].strip()
                 objects_list.append(object_info_dict)
+        # Get errors during concrete exeution
         case_list.append({"objects":objects_list})
         error_match=re.search(r'(?:Error[:])(?:\s)*(.*)',report)
         if error_match:
             error_info={}
             error_info["error"]=error_match.group(1)
+            case_list.append(error_info)
+        # Get errors during symbolic execution
+        error_match=re.search(r'(?:Klee\ Error[:])(?:\s)*(.*)',report)
+        if error_match:
+            error_info={}
+            error_info["klee error"]=error_match.group(1)
             case_list.append(error_info)
         report_list.append(case_list)
 if report_list:
