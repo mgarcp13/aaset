@@ -1,5 +1,5 @@
-# automatic_ada_symbolic_execution
-Herramienta para la ejecución simbólica de manera automática de código fuente Ada.
+# aaset
+aaset (Automatic Ada Symbolic Execution Tool) es una herramienta para la ejecución simbólica de manera automática de código fuente Ada.
 
 ## Funcionamiento
 A través de un sencillo formulario web se debe indicar un módulo y subir el código fuente empaquetado en un fichero .tar
@@ -28,9 +28,9 @@ Para la ejecución de la herramienta es necesario tener instalado:
 
 ## Instalación
 
-automatic_ada_symbolic_execution utiliza web2py como Framework para el desarrollo del servidor web. web2py está incluido como un submódulo del presente repositorio, por lo que será necesario inicilializarlo al clonar el repositorio:
+aaset utiliza web2py como Framework para el desarrollo del servidor web. web2py está incluido como un submódulo del presente repositorio, por lo que será necesario inicilializarlo al clonar el repositorio:
 ```
-git clone --recurse-submodules https://github.com/mgarcp13/automatic_ada_symbolic_execution.git
+git clone --recurse-submodules https://github.com/mgarcp13/aaset.git
 ```
 Por defecto, el módulo web2py se inicializa al contenido del repositorio remoto, que no incluye la aplicación que implementa el servidor web. Esta aplicación se encuentra empaquetada dentro del directorio web-application. Este directorio contiene un subdirectorio llamado aaset y un fichero w2p que es un empaquetado de la aplicación para ser instalado a través de las opciones de administrador de web2py. Con el subdirectorio aaset se puede instalar la aplicación simplemente copiándolo al directorio web2py/application:
 ```
