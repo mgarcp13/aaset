@@ -1,0 +1,3 @@
+[submodule "web2py"]
+	path = web2py
+	url = https://github.com/web2py/web2py.git
