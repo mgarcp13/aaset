@@ -1,0 +1,12 @@
+<style>
+    * {font-family: "Verdana", monospace; margin-left: 25px; margin-top: 25px}
+    label {font-size: 20px}
+    #text_input   {border-radius: 5px;}
+    p    {color: red;}
+</style>
+<form action="{{=URL('report')}}" method="post" enctype="multipart/form-data">
+    <label>Module:<input name="module" id="text_input"/></label><br/>
+    <label>Source:<input type="file" name="source"/></label><br/>
+    <input type="submit" value="Submit"/>
+</form>
+{{response.files.append(URL('static', 'css/form.css'))}}
