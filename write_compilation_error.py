@@ -11,5 +11,5 @@ compilation_errors_file=report_output_dir+"compilation_errors.err"
 errors_list=list()
 
 for error in open(compilation_errors_file,'r').readlines():
-    errors_list.append({"error":error.strip()})
+    errors_list.append({"error":error.strip(),"type":"compilation"})
 open(report_output_dir+"report.json",'w').write(json.JSONEncoder().encode({"compilation_errors":errors_list}))

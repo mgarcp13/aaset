@@ -1,0 +1,46 @@
+<style>
+    
+@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700');
+
+body {
+        font-family:'Source Sans Pro', sans-serif;
+}
+    
+table {
+        width:50%;
+        border:1px solid;
+        text-align: center;
+}
+    
+.header {
+        width:100%;
+        border:1px solid;
+        background-color:#EEEEEE;
+}
+    
+.row-tittle {
+        background-color:#EEEEEE;
+        border:1px solid;
+}
+    
+#error {
+        background-color:#fe380d;
+        border:1px solid;
+}
+    
+div.case {
+        padding-bottom: 30px
+}
+    
+</style>
+
+{{if "cases" in reporte:}}
+{{
+for case_index,case in enumerate(reporte["cases"]):
+objects=case[0]["objects"]
+errors=case[1]["errors"]
+klee_error=case[1]["klee error"] if "klee error" in case[1] else ""
+=DIV(H2("CASE "+str(case_index+1)), TABLE(TH("Objects", _class="header", _colspan="7"), TR(*objects[0], _class="row-tittle"), *[TR(*object.values()) for object in objects]), TABLE(TH("Errors", _class="header", _colspan="2", _id="error"), TR(*errors[0], _class="row-tittle", _id="error"), *[TR(*error.values()) for error in errors]))
+}}
+{{pass}}
+{{pass}}
