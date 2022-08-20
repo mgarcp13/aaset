@@ -39,6 +39,8 @@ cp -r ./web-application/aaset ./web2py/applications
 
 ## Uso
 
+### Cliente Web
+
 Arrancar la aplicación web2py:
 ```
 python3 web2py/web2py.py
@@ -51,6 +53,40 @@ Desde un navegador conectarse a la URL 127.0.0.1:8000/aaset/main/load
 
 ![Captura de pantalla 2022-07-23 141358](https://user-images.githubusercontent.com/9430650/180604488-b325831b-6ec1-4612-929d-ad8f4f05640c.png)
 
-Introducir el módulo y subir un tar con el código fuente. Una vez generado el reporte se mostrará en formato JSON. La visualización dependerá del navegador y podría ser necesario la instalación de algún plugin para su correcta visualización.
+Introducir el módulo y subir un tar con el código fuente. Una vez generado el reporte se mostrará el reporte JSON en un formato de tablas, además de información en texto con un pequeño resumen de la ejecución.
 
-![Captura de pantalla 2022-07-23 141848](https://user-images.githubusercontent.com/9430650/180604579-d3ddb588-1c55-463c-a57c-557c964c6333.png)
+![reporte_caso1](https://user-images.githubusercontent.com/9430650/185758140-24c32369-31aa-40f6-98b8-c5d6db2b01f9.png)
+
+### REST API
+
+Para la ejecución de la herramienta a través del REST API es necesario iniciar flask, que es el framework con el que se ha desarrollado el servidor web. El primer paso es indicar a flask qué servicio web debe indicar hay que modificar la variable de entorno FLASK\_APP indicando el fichero python que implementa el servicio, en este caso web\_service.py incluido en el directorio raiz del proyecto:
+
+```
+export FLASK_APP=web_service.py
+```
+
+Una vez indicado el servicio web a ejecutar hay que iniciar flask. Esto se hace con el comando, desde el directorio raiz de la herramienta:
+
+```
+flask run
+```
+
+En el propio inicio de flask se indica la URL en la que está escuchando el servidor para atender las peticiones:
+
+![run_flask](https://user-images.githubusercontent.com/9430650/185758275-e2225f45-14a6-497e-b1f3-076028e68a2d.png)
+
+Ahora cualquier cliente que lo desee puede obtener el reporte enviando un formulario vía POST con los mismos datos que para la ejecución web, obteniendo el reporte en JSON crudo. Por ejemplo, para ejecutar la herramienta haciendo uso de curl el comando sería:
+
+```
+curl -X POST http://127.0.0.1:5000/report -F "file=@/tmp/sample.tar" -F "module=q_math"
+```
+
+Aunque para una visualización más amigable del JSON se recomienda el uso de la herramienta jq:
+
+```
+curl -X POST http://127.0.0.1:5000/report -F "file=@/tmp/sample.tar" -F "module=q_math" | jq
+```
+
+Otra posibilidad es haciendo uso de la herramienta Postman:
+
+![postman](https://user-images.githubusercontent.com/9430650/185758397-7ee2a715-f776-4cd8-bbda-b728a1f8c4a3.png)
