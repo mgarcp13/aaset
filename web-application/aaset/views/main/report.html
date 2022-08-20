@@ -39,9 +39,10 @@ div.case {
     
 </style>
 
+
+{{if "cases" in reporte:}}
 {{=DIV(P("Found "+str(reporte["total_errors"])+" cases generating errors over "+str(reporte["total_cases"]) + " cases"), P("Found " + str(reporte["execution_errors"]) + " execution errors and " + str(reporte["klee_errors"]) + " klee errors"), _class="summary")}}
-{{if "cases" in reporte:
-for case_index,case in enumerate(reporte["cases"]):
+{{for case_index,case in enumerate(reporte["cases"]):
 objects=case[0]["objects"]
 errors=case[1]["errors"]
 klee_error=case[1]["klee error"] if "klee error" in case[1] else ""

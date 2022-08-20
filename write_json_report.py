@@ -64,4 +64,4 @@ for case_file in path.glob("test[0-9]*.txt"):
 if report_list:
     open(report_output_dir+"report.json",'w').write(json.JSONEncoder().encode({"total_cases":total_cases,"total_errors":total_errors,"execution_errors":execution_errors,"klee_errors":klee_errors,"cases":report_list}))
 else:
-    open(report_output_dir+"report.json",'w').write(json.JSONEncoder().encode({"msg":"no errors found"}))
+    open(report_output_dir+"report.json",'w').write(json.JSONEncoder().encode({"msg":"no errors found in "+total_errors+" errors"}))
