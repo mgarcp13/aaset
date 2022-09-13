@@ -116,7 +116,7 @@ generate_bytecodes () {
 
 # Run klee command to perform symbolic execution
 run_klee_execution () {
-  klee --entry-point=_ada_$main_module --external-calls=none --output-dir=$OUTPUT_KLEE_DIR --link-llvm-lib=$LIB_INCLUDE_DIR/$external_libs $LIB_MAIN_DIR/$main_module.bc
+  klee --entry-point=_ada_$main_module --external-calls=none --output-dir=$OUTPUT_KLEE_DIR --emit-all-errors=true --link-llvm-lib=$LIB_INCLUDE_DIR/$external_libs $LIB_MAIN_DIR/$main_module.bc
 }
 
 # Look klee output looking for errors and generate a report with the test cases for each error
