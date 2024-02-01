@@ -1,22 +1,65 @@
-# aaset
-aaset (Automatic Ada Symbolic Execution Tool) es una herramienta para la ejecución simbólica de manera automática de código fuente Ada.
+# AASET
 
-## Funcionamiento
-A través de un sencillo formulario web se debe indicar un módulo y subir el código fuente empaquetado en un fichero .tar
+`aaset` (Automatic Ada Symbolic Execution Tool) is a tool for the automatic
+symbolic execution of Ada source code.
 
-Una vez subido el código fuente se analizarán todos los procedimientos incluidos en el fichero de especificación con el mismo nombre que el módulo indicado en el formulario. Por ejemplo, si el módulo indicado es "prueba" se analizarán todos los procedimientos incluidos en el paquete prueba.ads.
+Follow this link for the [Spanish version](README_es.md) of this document.
 
-Automáticamente se creará un nuevo paquete con un código fuente que declare todas las variables necesarias para realizar las llamadas a los procedimientos encontrados, estableciéndola como simbólicas mediante el uso de las librerías de KLEE. Finalmente, una vez las variables han sido declaras y hechas simbólicas se realizarán las llamadas a todos los procedimientos, pasándoles como argumentos las variables necesarias. De esto modo se ejecutaría la aplicación de manera simbólica.
+## Operation
 
-Una vez generados mediante el uso de gnat-llvm los bytecodes del código fuente generado más un bytecode que incluya los bytecodes de cada uno de los paquetes incluidos en el tar (esto es necesario para linkarlo con el bytecode principal, al fin de marcar como internos todos los subprogramas dentro del código fuente proporcionado) se ejecuta simbólicamente la aplicación mediante KLEE, generando los casos de pruebas así como algunos errores en la ejecución.
+Through a simple web form, one must specify a module and upload the source code
+packaged in a `.tar` file.
 
-Concluída la ejecución simbólica, se ejecutará la herramienta converter que se encargará de ejecutar los procedimientos declarados en el módulo de una manera concreta, utilizando los casos de prueba generados en la ejecución simbólica. La herramienta aaset creará automáticamente un nuevo paquete dentro de la herramienta converter que declare todas las variables necesarias para la llamada a todos los procedimientos declarados en la especificación del módulo indicado (de la misma manera que el código fuente para realizar la ejecución simbólica). Luego, leerá en el mismo orden en que fueron declaradas, tomadas como argumentos de ejecución una representación en entero de cada variable, obteniendo dicha representación de los casos de prueba, y convirtiendo esa representación en entero en un objeto del tipo correspondiente a cada variable. Cuando todas las variables estén asignadas a los valores del caso de prueba a analizar se realizarán las llamadas a todos los procedimientos declarados en la especificación del módulo, ejecutándose la aplicación de manera concreta, con el fin de buscar errores en tiempo de ejecución para cada uno de los casos de pruebas generados por KLEE durante la ejecución simbólica.
+Once the source code is uploaded, all the procedures included in the
+specification file with the same name as the module indicated in the form will
+be analyzed. For example, if the module indicated is "test", all the procedures
+included in the `test.ads`` package will be analyzed.
 
-Por cada error encontrado en la ejecución simbólica o concreta en cada caso de prueba se generará un fichero .txt con la información del caso de prueba y los errores en cuestión. Finalmente, se convertirán todos esos ficheros .txt en el reporte en formato JSON con toda la información para ser presentada al usuario. Asimismo, también se devolverá un JSON con los errores de compilación en el caso de que el código fuente para realizar la ejecución simbólica no pueda ser generado, ya sea por errores en el código fuente proporcionado o por algún error en la generación del nuevo código fuente. La cabecera 'Content-Type' de la respuesta está marcada como application/json por lo que dependiendo del navegador la visualización será distinta, pudiendo requerir la instalación de algún plugin para la presentación 'amigable' del reporte JSON.
+Automatically, a new package will be created with source code that declares all
+the necessary variables to perform the calls to the found procedures, setting
+them as symbolic by using the KLEE libraries. Finally, once the variables have
+been declared and made symbolic, calls to all the procedures will be made,
+passing them the necessary variables as arguments. In this way, the application
+would be executed symbolically.
 
-## Prerequisitos
+Once generated using `gnat-llvm`, the bytecodes of the generated source code,
+plus a bytecode that includes the bytecodes of each of the packages included in
+the tar (this is necessary to link it with the main bytecode, in order to mark
+as internal all the subprograms within the provided source code), the
+application is executed symbolically through KLEE, generating the test cases as
+well as some errors in the execution.
 
-Para la ejecución de la herramienta es necesario tener instalado:
+After the symbolic execution is concluded, the converter tool will be executed,
+which will take care of executing the procedures declared in the module in a
+concrete manner, using the test cases generated in the symbolic execution. The
+aaset tool will automatically create a new package within the converter tool
+that declares all the necessary variables for the call to all the procedures
+declared in the specification of the indicated module (in the same manner as
+the source code to perform the symbolic execution). Then, it will read, in the
+same order in which they were declared, an integer representation of each
+variable as execution arguments, obtaining such representation from the test
+cases, and converting that integer representation into an object of the type
+corresponding to each variable. When all the variables are assigned to the
+values of the test case to be analyzed, calls will be made to all the
+procedures declared in the specification of the module, executing the
+application in a concrete manner, with the aim of searching for runtime errors
+for each of the test cases generated by KLEE during the symbolic execution.
+
+For each error found in the symbolic or concrete execution in each test case, a
+`.txt` file will be generated with the information of the test case and the
+errors in question. Finally, all these `.txt` files will be converted into a
+report in JSON format with all the information to be presented to the user.
+Likewise, a JSON will also be returned with the compilation errors in case the
+source code for performing the symbolic execution cannot be generated, either
+due to errors in the provided source code or due to an error in the generation
+of the new source code. The `'Content-Type'` header of the response is marked as
+`application/json` so, depending on the browser, the display will be different,
+possibly requiring the installation of a plugin for the 'friendly' presentation
+of the JSON report.
+
+## Prerequisites
+
+For the execution of the tool, it is necessary to have installed:
 
 [gcc-11.3.0](https://gcc.gnu.org/install/index.html)
 
@@ -26,67 +69,87 @@ Para la ejecución de la herramienta es necesario tener instalado:
 
 [KLEE](https://klee.github.io/build-llvm11/)
 
-## Instalación
+## Installation
 
-aaset utiliza web2py como Framework para el desarrollo del servidor web. web2py está incluido como un submódulo del presente repositorio, por lo que será necesario inicilializarlo al clonar el repositorio:
+`aaset` uses `web2py` as the Framework for web server development. `web2py` is
+included as a submodule of this repository, so it will be necessary to
+initialize it when cloning the repository:
 ```
 git clone --recurse-submodules https://github.com/mgarcp13/aaset.git
 ```
-Por defecto, el módulo web2py se inicializa al contenido del repositorio remoto, que no incluye la aplicación que implementa el servidor web. Esta aplicación se encuentra empaquetada dentro del directorio web-application. Este directorio contiene un subdirectorio llamado aaset y un fichero w2p que es un empaquetado de la aplicación para ser instalado a través de las opciones de administrador de web2py. Con el subdirectorio aaset se puede instalar la aplicación simplemente copiándolo al directorio web2py/application:
+By default, the `web2py` module initializes to the content of the remote
+repository, which does not include the application that implements the web
+server. This application is packaged inside the web-application directory. This
+directory contains a subdirectory called `aaset` and a file `w2p` which is a
+package of the application to be installed through the web2py admin options.
+With the `aaset` subdirectory, you can install the application simply by copying
+it to the `web2py/applications` directory:
 ```
 cp -r ./web-application/aaset ./web2py/applications
 ```
 
-## Uso
+## Use
 
-### Cliente Web
+### Web Client
 
-Arrancar la aplicación web2py:
+Start the `web2py` application:
 ```
 python3 web2py/web2py.py
 ```
-Indicar una contraseña de administración, puerto e IP del servidor.
+Set an administration password, server port, and IP:
 
 ![Captura de pantalla 2022-07-23 142023](https://user-images.githubusercontent.com/9430650/180604618-d9cbb982-be56-48d8-acf3-8e29e0210aca.png)
 
-Desde un navegador conectarse a la URL 127.0.0.1:8000/aaset/main/load
+From a browser, connect to the URL [127.0.0.1:8000/aaset/main/load](127.0.0.1:8000/aaset/main/load)
 
 ![Captura de pantalla 2022-07-23 141358](https://user-images.githubusercontent.com/9430650/180604488-b325831b-6ec1-4612-929d-ad8f4f05640c.png)
 
-Introducir el módulo y subir un tar con el código fuente. Una vez generado el reporte se mostrará el reporte JSON en un formato de tablas, además de información en texto con un pequeño resumen de la ejecución.
+Provide the module name and upload a tar with the source code. Once the report
+is generated, the JSON report will be displayed in a table format, in addition
+to text information with a brief summary of the execution.
 
 ![reporte_caso1](https://user-images.githubusercontent.com/9430650/185758140-24c32369-31aa-40f6-98b8-c5d6db2b01f9.png)
 
 ### REST API
 
-Para la ejecución de la herramienta a través del REST API es necesario iniciar flask, que es el framework con el que se ha desarrollado el servidor web. El primer paso es indicar a flask qué servicio web debe indicar hay que modificar la variable de entorno FLASK\_APP indicando el fichero python que implementa el servicio, en este caso web\_service.py incluido en el directorio raiz del proyecto:
+To execute the tool through the REST API, it is necessary to start flask, which
+is the framework with which the web server has been developed. The first step
+is to indicate to flask which web service should be set by modifying the
+FLASK_APP environment variable to indicate the python file that implements the
+service, in this case, web_service.py included in the root directory of the
+project:
 
 ```
 export FLASK_APP=web_service.py
 ```
 
-Una vez indicado el servicio web a ejecutar hay que iniciar flask. Esto se hace con el comando, desde el directorio raiz de la herramienta:
+Once the web service to be executed is indicated, you need to start `flask`.
+This is done with the command, from the root directory of the tool:
 
 ```
 flask run
 ```
 
-En el propio inicio de flask se indica la URL en la que está escuchando el servidor para atender las peticiones:
+At the very start of flask, the URL where the server is listening to handle
+requests is indicated:
 
 ![run_flask](https://user-images.githubusercontent.com/9430650/185758275-e2225f45-14a6-497e-b1f3-076028e68a2d.png)
 
-Ahora cualquier cliente que lo desee puede obtener el reporte enviando un formulario vía POST con los mismos datos que para la ejecución web, obteniendo el reporte en JSON crudo. Por ejemplo, para ejecutar la herramienta haciendo uso de curl el comando sería:
+Now, any client who wishes can obtain the report by sending a form via POST
+with the same data as for the web execution, obtaining the report in raw JSON.
+For instance, to execute the tool using curl, the command would be:
 
 ```
 curl -X POST http://127.0.0.1:5000/report -F "file=@/tmp/sample.tar" -F "module=q_math"
 ```
 
-Aunque para una visualización más amigable del JSON se recomienda el uso de la herramienta jq:
+However, for a more user-friendly display of the JSON, the use of the jq tool
+is recommended:
 
 ```
 curl -X POST http://127.0.0.1:5000/report -F "file=@/tmp/sample.tar" -F "module=q_math" | jq
 ```
 
-Otra posibilidad es haciendo uso de la herramienta Postman:
+Another possibility is to use the Postman tool:
 
 ![postman](https://user-images.githubusercontent.com/9430650/185758397-7ee2a715-f776-4cd8-bbda-b728a1f8c4a3.png)
